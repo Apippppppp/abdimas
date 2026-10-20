@@ -5,9 +5,10 @@ import {
   PhWallet, PhHandHeart, PhBuildings, PhPiggyBank, PhHandCoins,
   PhCow, PhBooks, PhCalendarBlank, PhSpeakerHigh,
   PhCaretDown, PhCaretLeft, PhCaretRight,
+  PhImages, PhX,
 } from '@phosphor-icons/vue';
-import { MASJID, PRAYER_TIMES, KAJIAN, ANNOUNCEMENTS, QRIS, DONATION, VERSE, QURBAN, ARTICLES } from './data.js';
-import { secondsUntil, nextPrayerIndex, formatRemaining } from './lib/time.js';
+import { MASJID, PRAYER_TIMES, KAJIAN, ANNOUNCEMENTS, QRIS, DONATION, VERSE, QURBAN, ARTICLES, GALLERY } from './data.js';
+import { secondsUntil, nextPrayerIndex, formatRemaining, livePrayerIndex } from './lib/time.js';
 
 // Kanvas tetap 1672x941. Seluruh isi diskalakan dengan satu transform agar proporsi tidak berubah.
 const W = 1672;
@@ -48,6 +49,37 @@ const hijri = computed(() => hijriFmt.format(now.value).replace(' AH', ' H'));
 const nextIdx = computed(() => nextPrayerIndex(PRAYER_TIMES, now.value));
 const next = computed(() => PRAYER_TIMES[nextIdx.value]);
 const remaining = computed(() => formatRemaining(secondsUntil(next.value.time, now.value)));
+
+// ---------- Live streaming saat waktu sholat ----------
+// Seluruh layar diganti embed YouTube selama LIVE_MIN menit sejak azan,
+// kartu jam tetap menempel di atasnya selama durasi yang sama.
+const LIVE_MIN = 20;
+// ponytail: mute=1 supaya autoplay tidak diblokir browser. Hapus kalau peramban izinkan suara autoplay.
+// modestbranding + controls=0 membuang logo/tulisan YouTube dari frame.
+const LIVE_EMBED =
+  'https://www.youtube.com/embed/OcOyJXKv3T4?autoplay=1&mute=1&rel=0&modestbranding=1&controls=0&playsinline=1';
+const liveIdx = computed(() => livePrayerIndex(PRAYER_TIMES, now.value, LIVE_MIN));
+const live = computed(() => liveIdx.value !== -1);
+// Saat live dipaksa lewat tombol manual bisa jadi bukan jam sholat — label jatuh ke "Live Streaming".
+const livePrayerLabel = computed(() => {
+  const p = PRAYER_TIMES[liveIdx.value];
+  return p ? `Waktu Sholat ${p.name} · ${p.time} WIB` : 'Live Streaming';
+});
+const livePrayerIcon = computed(() => (liveIdx.value >= 0 ? PRAYER_ICON[PRAYER_TIMES[liveIdx.value].name] : null));
+
+const WIB = 'Asia/Jakarta';
+const liveTimeFmt = new Intl.DateTimeFormat('en-GB', {
+  timeZone: WIB, hourCycle: 'h23', hour: '2-digit', minute: '2-digit', second: '2-digit',
+});
+const liveDateFmt = new Intl.DateTimeFormat('id-ID', {
+  timeZone: WIB, weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+});
+const liveHijriFmt = new Intl.DateTimeFormat('id-ID-u-ca-islamic-umalqura', {
+  timeZone: WIB, day: 'numeric', month: 'long', year: 'numeric',
+});
+const liveTime = computed(() => liveTimeFmt.format(now.value));
+const liveDate = computed(() => liveDateFmt.format(now.value));
+const liveHijri = computed(() => liveHijriFmt.format(now.value).replace(' AH', ' H'));
 
 // Sholat sebelum `nextIdx` sudah lewat. Saat nextIdx 0 (setelah Isya), tidak ada yang lewat di hari ini.
 const rowState = (i) => {
@@ -90,6 +122,11 @@ onUnmounted(() => { try { qurbanAnim?.destroy(); } catch {} });
 
 const tickerText = ANNOUNCEMENTS.join('   •   ');
 const slides = [...ARTICLES, ...ARTICLES];
+const gallerySlides = [...GALLERY, ...GALLERY];
+
+const activePhoto = ref(null);
+const openPhoto = (item) => (activePhoto.value = item);
+const closePhoto = () => (activePhoto.value = null);
 
 // Periode keuangan. Nominal masih statis (data.js), jadi ganti periode hanya mengubah label
 // sampai backend menyediakan data per bulan.
@@ -114,6 +151,7 @@ const onKey = (e) => {
   if (e.key === 'Escape') {
     pickerOpen.value = false;
     donateCat.value = null;
+    activePhoto.value = null;
   }
 };
 
@@ -221,7 +259,7 @@ onUnmounted(() => {
           <header class="card-head">
             <PhMosque class="gold" :size="22" />
             <h2>Jadwal Sholat</h2>
-            <span class="loc"><PhMapPin :size="16" /> Jakarta</span>
+            <span class="loc"><PhMapPin :size="16" /> Bekasi</span>
           </header>
           <ul>
             <li v-for="(p, i) in PRAYER_TIMES" :key="p.name" class="prayer-row" :class="rowState(i)">
@@ -387,30 +425,61 @@ onUnmounted(() => {
           </section>
         </div>
 
-        <section class="card articles">
-          <header class="card-head">
-            <PhBooks class="green" :size="20" />
-            <h2>Artikel &amp; Kajian Islami</h2>
-            <p class="muted head-sub">Tambahkan ilmu, kuatkan iman, luruskan langkah</p>
-          </header>
-          <div class="article-viewport">
-            <ul class="article-track">
-              <li
-                v-for="(a, i) in slides"
-                :key="i"
-                class="article"
-                :aria-hidden="i >= ARTICLES.length ? 'true' : null"
-                :style="a.image ? { backgroundImage: `url(${a.image})` } : null"
-              >
-                <div class="article-overlay">
-                  <span class="cat">{{ a.badge }}</span>
-                  <h3>{{ a.title }}</h3>
-                  <p class="date"><PhCalendarBlank :size="13" /> {{ a.date }}</p>
-                </div>
-              </li>
-            </ul>
-          </div>
-        </section>
+        <div class="row bottom">
+          <section class="card articles">
+            <header class="card-head">
+              <PhBooks class="green" :size="20" />
+              <h2>Artikel &amp; Kajian Islami</h2>
+            </header>
+            <div class="article-viewport">
+              <ul class="article-track">
+                <li
+                  v-for="(a, i) in slides"
+                  :key="i"
+                  class="article"
+                  :aria-hidden="i >= ARTICLES.length ? 'true' : null"
+                  :style="a.image ? { backgroundImage: `url(${a.image})` } : null"
+                >
+                  <div class="article-overlay">
+                    <span class="cat">{{ a.badge }}</span>
+                    <h3>{{ a.title }}</h3>
+                    <p class="date"><PhCalendarBlank :size="13" /> {{ a.date }}</p>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </section>
+
+          <section class="card gallery">
+            <header class="card-head">
+              <PhImages class="green" :size="20" />
+              <h2>Galeri Kegiatan</h2>
+            </header>
+            <div class="gallery-viewport">
+              <ul class="gallery-track">
+                <li
+                  v-for="(g, i) in gallerySlides"
+                  :key="i"
+                  class="gallery-item-wrap"
+                  :aria-hidden="i >= GALLERY.length ? 'true' : null"
+                >
+                  <button
+                    type="button"
+                    class="gallery-item"
+                    :aria-label="`Lihat foto ${g.caption}`"
+                    @click="openPhoto(g)"
+                  >
+                    <img :src="g.src" :alt="g.caption" loading="lazy" />
+                    <span class="gallery-caption">
+                      <span class="gallery-caption-title">{{ g.caption }}</span>
+                      <span class="gallery-caption-date"><PhCalendarBlank :size="11" /> {{ g.date }}</span>
+                    </span>
+                  </button>
+                </li>
+              </ul>
+            </div>
+          </section>
+        </div>
       </main>
 
       <!-- Bar pengumuman -->
@@ -426,6 +495,15 @@ onUnmounted(() => {
           </div>
         </div>
       </footer>
+
+      <!-- Lightbox galeri -->
+      <div v-if="activePhoto" class="modal-wrap lightbox-wrap" @click.self="closePhoto">
+        <div class="card lightbox" role="dialog" aria-modal="true" aria-label="Foto kegiatan">
+          <button type="button" class="lightbox-close" aria-label="Tutup" @click="closePhoto"><PhX :size="20" /></button>
+          <img :src="activePhoto.src" :alt="activePhoto.caption" />
+          <p class="lightbox-caption">{{ activePhoto.caption }} <span class="lightbox-date">— {{ activePhoto.date }}</span></p>
+        </div>
+      </div>
 
       <!-- Form donasi (simulasi) -->
       <div v-if="donateCat" class="modal-wrap" @click.self="closeDonate">
@@ -461,6 +539,29 @@ onUnmounted(() => {
       </div>
 
     </div>
+
+    <!-- Layar live: menggantikan seluruh tampilan selama 20 menit sejak masuk waktu sholat -->
+    <Transition name="live">
+      <div v-if="live" class="live">
+        <iframe
+          class="live-frame"
+          :src="LIVE_EMBED"
+          title="Live streaming YouTube"
+          allow="autoplay; encrypted-media; picture-in-picture"
+          allowfullscreen
+        />
+        <span class="live-badge"><span class="live-dot" /> LIVE</span>
+        <div class="live-clock">
+          <p class="live-time">{{ liveTime }}</p>
+          <p class="live-prayer">
+            <component :is="livePrayerIcon" v-if="livePrayerIcon" class="gold" :size="18" />
+            {{ livePrayerLabel }}
+          </p>
+          <p class="live-date">{{ liveDate }}</p>
+          <p class="live-hijri">{{ liveHijri }}</p>
+        </div>
+      </div>
+    </Transition>
   </div>
 </template>
 
@@ -479,7 +580,7 @@ onUnmounted(() => {
   display: grid;
   grid-template-columns: 680px 1fr;
   grid-template-rows: 1fr 44px;
-  font-family: 'Plus Jakarta Sans', Poppins, Inter, sans-serif;
+  font-family: 'Plus Bekasi Sans', Poppins, Inter, sans-serif;
   color: #fff;
   transform-origin: 0 0;
 }
@@ -594,6 +695,7 @@ h1, h2, h3 { margin: 0; }
 .row { display: grid; gap: 12px; min-height: 0; }
 .row.top { grid-template-columns: 340px minmax(0, 1fr) 420px; }
 .row.mid { grid-template-columns: 1fr; }
+.row.bottom { grid-template-columns: 1fr 1fr; gap: 12px; align-items: stretch; }
 
 /* QRIS */
 .qris {
@@ -814,26 +916,18 @@ h1, h2, h3 { margin: 0; }
   gap: 8px;
   overflow: hidden;
 }
-.head-sub { margin-left: 8px; font-size: 14px; }
-/* Carousel otomatis: 4 slide terlihat, daftar digandakan agar loop mulus. */
-.article-viewport {
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
-  container-type: inline-size;
-}
+.article-viewport { flex: 1; min-height: 0; overflow: hidden; }
 .article-track {
   list-style: none;
   margin: 0;
   padding: 0;
-  height: 100%;
   width: max-content;
+  height: 100%;
   display: flex;
   gap: 10px;
   animation: slide 40s linear infinite; /* ponytail: durasi tetap. Hitung dari jumlah slide saat data dinamis. */
 }
 .article-viewport:hover .article-track { animation-play-state: paused; }
-.article-track .article { width: calc((100cqw - 30px) / 4); }
 @keyframes slide {
   from { transform: translateX(0); }
   to { transform: translateX(-50%); }
@@ -844,12 +938,16 @@ h1, h2, h3 { margin: 0; }
   border-radius: 12px;
   overflow: hidden;
   min-width: 0;
-  min-height: 148px;
   display: flex;
   align-items: flex-end;
+  flex: none;
   background-color: #12332c;
   background-size: cover;
   background-position: center;
+  /* Tinggi = sisa ruang card, lebar ikut rasio 3/2 supaya sejajar dengan galeri. */
+  width: auto;
+  height: 100%;
+  aspect-ratio: 3 / 2;
 }
 /* gradient hitam tipis di bawah agar teks terbaca */
 .article::before {
@@ -897,6 +995,88 @@ h1, h2, h3 { margin: 0; }
   gap: 4px;
 }
 
+/* Galeri kegiatan — di kanan artikel, satu baris looping kayak artikel, ukuran sama */
+.gallery {
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow: hidden;
+}
+.gallery-viewport { flex: 1; min-height: 0; overflow: hidden; }
+.gallery-track {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: max-content;
+  height: 100%;
+  display: flex;
+  gap: 10px;
+  animation: gallery-slide 28s linear infinite;
+}
+.gallery-viewport:hover .gallery-track { animation-play-state: paused; }
+.gallery-item-wrap { flex: none; height: 100%; list-style: none; }
+@keyframes gallery-slide {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.gallery-item {
+  position: relative;
+  border: 0;
+  padding: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  background: #e6efe9;
+  display: block;
+  /* Sama seperti kartu artikel: tinggi mengisi card, lebar ikut rasio 3/2. */
+  height: 100%;
+  width: auto;
+  aspect-ratio: 3 / 2;
+}
+.gallery-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 300ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.gallery-item:hover img { transform: scale(1.04); }
+.gallery-item:focus-visible { outline: 2px solid #2e9e62; outline-offset: 2px; }
+.gallery-caption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 22px 10px 8px;
+  background: linear-gradient(to top, rgba(0,0,0,0.72), transparent);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  text-align: left;
+  text-shadow: 0 1px 6px rgba(0,0,0,0.55);
+  overflow: hidden;
+}
+.gallery-caption-title {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.gallery-caption-date {
+  font-size: 11px;
+  font-weight: 500;
+  opacity: 0.88;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+.lightbox-date { font-weight: 500; opacity: 0.75; }
+
 /* ---------- Bar pengumuman ---------- */
 .ticker {
   grid-column: 1 / -1;
@@ -930,6 +1110,149 @@ h1, h2, h3 { margin: 0; }
   from { transform: translateX(0); }
   to { transform: translateX(-50%); }
 }
+
+/* ---------- Layar live saat waktu sholat ---------- */
+.live {
+  position: absolute;
+  inset: 0;
+  z-index: 100;
+  background: #000;
+}
+.live-frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+/* Penanda live, menggantikan label YouTube di frame */
+.live-badge {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font-family: 'Plus Bekasi Sans', Poppins, Inter, sans-serif;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+}
+.live-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ff3b30;
+  animation: live-pulse 1.4s ease-in-out infinite;
+}
+@keyframes live-pulse {
+  50% { opacity: 0.3; }
+}
+.live-clock {
+  position: absolute;
+  right: 28px;
+  bottom: 28px;
+  min-width: 320px;
+  padding: 16px 26px;
+  border-radius: 18px;
+  background: rgba(8, 40, 34, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  color: #fff;
+  text-align: center;
+  font-family: 'Plus Bekasi Sans', Poppins, Inter, sans-serif;
+}
+.live-time {
+  font-size: 56px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -1px;
+  font-variant-numeric: tabular-nums;
+}
+.live-prayer {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 10px auto 0;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.live-date { font-size: 17px; margin-top: 10px; }
+.live-hijri { font-size: 15px; opacity: 0.85; }
+
+/* Transisi masuk/keluar layar live: tumpang tindih fade + zoom video, kartu menyusul */
+.live-enter-active { transition: opacity 500ms cubic-bezier(0.23, 1, 0.32, 1); }
+.live-leave-active { transition: opacity 450ms cubic-bezier(0.4, 0, 1, 1); }
+.live-enter-from, .live-leave-to { opacity: 0; }
+.live-enter-active .live-frame { animation: live-zoom 900ms cubic-bezier(0.23, 1, 0.32, 1) both; }
+@keyframes live-zoom {
+  from { transform: scale(1.06); }
+  to { transform: scale(1); }
+}
+.live-enter-active .live-clock { animation: live-rise 520ms 200ms cubic-bezier(0.23, 1, 0.32, 1) both; }
+.live-enter-active .live-badge { animation: live-in 400ms 420ms ease both; }
+.live-leave-active .live-clock, .live-leave-active .live-badge { animation: live-out 200ms ease both; }
+@keyframes live-rise {
+  from { opacity: 0; transform: translateY(28px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes live-in {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes live-out {
+  to { opacity: 0; transform: translateY(6px); }
+}
+
+/* Lightbox galeri */
+.lightbox-wrap { cursor: pointer; }
+.lightbox {
+  position: relative;
+  width: min(560px, 86vw);
+  max-height: 78vh;
+  padding: 0;
+  overflow: hidden;
+  cursor: default;
+}
+.lightbox img {
+  width: 100%;
+  max-height: 62vh;
+  object-fit: cover;
+  display: block;
+}
+.lightbox-caption {
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #12332c;
+  text-align: center;
+}
+.lightbox-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 1;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(0,0,0,0.55);
+  color: #fff;
+  cursor: pointer;
+}
+.lightbox-close:hover { background: rgba(0,0,0,0.72); }
+.lightbox-close:focus-visible { outline: 2px solid #2e9e62; outline-offset: 2px; }
 
 /* ---------- Donasi (simulasi) ---------- */
 .modal-wrap {
@@ -1015,7 +1338,12 @@ h1, h2, h3 { margin: 0; }
 .swap-leave-to { opacity: 0; transform: translateY(-16px) scale(0.98); }
 
 @media (prefers-reduced-motion: reduce) {
-  .ticker-track { animation-play-state: paused; }
+  .ticker-track, .gallery-track, .article-track { animation-play-state: paused; }
   .fill, .prayer-row, .swap-enter-active, .swap-leave-active { transition: none; }
+  .live-dot { animation: none; }
+  .live-enter-active, .live-leave-active { transition: none; }
+  .live-enter-active .live-frame, .live-enter-active .live-clock,
+  .live-enter-active .live-badge, .live-leave-active .live-clock,
+  .live-leave-active .live-badge { animation: none; }
 }
 </style>

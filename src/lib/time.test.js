@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { secondsUntil, nextPrayerIndex, formatRemaining } from './time.js';
+import { secondsUntil, nextPrayerIndex, formatRemaining, livePrayerIndex } from './time.js';
 
 const TIMES = [
   { name: 'Subuh', time: '04:28' },
@@ -20,5 +20,13 @@ assert.equal(formatRemaining(secondsUntil('04:28', at(23, 0))), '5 jam 28 menit'
 
 assert.equal(formatRemaining(300), '5 menit');
 assert.equal(formatRemaining(0), '0 menit');
+
+// Waktu live sholat dibaca dalam WIB (UTC+7), bukan zona perangkat.
+const utc = (h, m, s = 0) => new Date(Date.UTC(2026, 9, 15, h - 7, m, s));
+assert.equal(livePrayerIndex(TIMES, utc(10, 0), 20), -1);
+assert.equal(livePrayerIndex(TIMES, utc(11, 53, 0), 20), 1);
+assert.equal(livePrayerIndex(TIMES, utc(12, 12, 59), 20), 1);
+assert.equal(livePrayerIndex(TIMES, utc(12, 13, 0), 20), -1);
+assert.equal(livePrayerIndex(TIMES, utc(17, 47, 5), 20), 3);
 
 console.log('time.test: ok');

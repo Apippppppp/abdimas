@@ -1,8 +1,8 @@
 // Konten statis dari DESIGN.md. Ganti dengan sumber data (API/CMS) saat backend siap.
 
-export const MASJID = { name: 'Masjid Al-Falah', location: 'Jakarta Selatan' };
+export const MASJID = { name: 'Masjid Al-Falah', location: 'Bekasi' };
 
-// Waktu sholat Jakarta (sumber: DESIGN.md §8). Ganti dengan API Bimas Islam saat tersedia.
+// Waktu sholat Bekasi (sumber: DESIGN.md §8). Ganti dengan API Bimas Islam saat tersedia.
 export const PRAYER_TIMES = [
   { name: 'Subuh', time: '04:28' },
   { name: 'Dzuhur', time: '11:53' },
@@ -31,7 +31,7 @@ export const QRIS = {
   nmid: 'ID2026000123456',
   bank: 'Bank Syariah Indonesia (BSI)',
   account: '7222 3333 4444',
-  holder: 'a.n. Masjid Al-Falah Jakarta Selatan',
+  holder: 'a.n. Masjid Al-Falah Bekasi',
 };
 
 export const DONATION = {
@@ -68,4 +68,11 @@ export const ARTICLES = [
   { badge: 'AKHLAK', title: "Adab Membaca Al-Qur'an", date: '10 Oktober 2026', image: '/articles/artikel.webp' },
   { badge: 'HIKMAH', title: 'Makna Sabar dalam Kehidupan Sehari-hari', date: '8 Oktober 2026', image: '/articles/artikel.webp' },
   { badge: 'FIQIH', title: 'Amalan Ringan, Pahala Besar', date: '5 Oktober 2026', image: '/articles/artikel.webp' },
+];
+
+export const GALLERY = [
+  { src: '/masjid.webp', caption: 'Sholat Berjamaah', date: '12 Oktober 2026' },
+  { src: '/articles/artikel.webp', caption: 'Kajian Rutin', date: '10 Oktober 2026' },
+  { src: '/masjid.webp', caption: 'Gotong Royong', date: '8 Oktober 2026' },
+  { src: '/articles/artikel.webp', caption: 'Buka Puasa Bersama', date: '5 Oktober 2026' },
 ];

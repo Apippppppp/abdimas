@@ -1,78 +1,116 @@
-// Konten statis dari DESIGN.md. Ganti dengan sumber data (API/CMS) saat backend siap.
+export const SITE = {
+  name: 'Masjid Al-Falah',
+  location: 'Bekasi',
+  pageTitle: 'Masjid Al-Falah | Layar Digital',
+  heading: 'Portal Informasi Masjid',
+  footer: 'Mari makmurkan masjid dengan ilmu, ibadah, dan kepedulian bersama.',
+  // Jadwal, petugas, dan nominal berikut berasal dari contoh desain.
+  sampleData: true,
+  sampleLabel: 'Jadwal, petugas & nominal contoh',
+};
 
-export const MASJID = { name: 'Masjid Al-Falah', location: 'Bekasi' };
-
-// Waktu sholat Bekasi (sumber: DESIGN.md §8). Ganti dengan API Bimas Islam saat tersedia.
-export const PRAYER_TIMES = [
-  { name: 'Subuh', time: '04:28' },
-  { name: 'Dzuhur', time: '11:53' },
-  { name: 'Ashar', time: '15:10' },
-  { name: 'Maghrib', time: '17:47' },
-  { name: 'Isya', time: '19:01' },
+export const WEEKLY_SCHEDULE = [
+  { day: 'Senin', title: 'Kajian Tafsir', detail: 'QS. Pilihan', time: 'Ba’da Magrib', duration: '± 45 menit', kind: 'book' },
+  { day: 'Selasa', title: 'Tahsin Al-Qur’an', detail: 'Umum', time: '19.30–21.00', duration: 'WIB', kind: 'book' },
+  { day: 'Rabu', title: 'Pengajian Ibu-ibu', detail: 'Fiqih Keluarga', time: '09.00–11.00', duration: 'WIB', kind: 'group' },
+  { day: 'Kamis', title: 'Kajian Islam Tematik', detail: 'Umum', time: 'Ba’da Magrib', duration: '± 45 menit', kind: 'book' },
+  { day: 'Jumat', title: 'Kajian Menjelang Sholat Jumat', time: '11.30–12.00', duration: 'WIB', kind: 'mosque' },
+  { day: 'Sabtu', title: 'Kajian Remaja Masjid', detail: 'Pemuda & Pemudi', time: '19.30–21.00', duration: 'WIB', kind: 'group' },
+  { day: 'Minggu', title: 'Kajian Subuh', detail: 'Riyadhus Shalihin', time: 'Ba’da Subuh', duration: '± 45 menit', kind: 'book' },
 ];
 
-export const KAJIAN = {
-  schedule: 'Rabu, 20.00 – 21.00 WIB',
-  title: 'Kitab Riyadhus Shalihin',
+export const FRIDAY_ROSTER = {
+  khatib: 'Ust. Dr. Ahmad Fauzi, Lc., M.A.',
+  imam: 'Ust. H. Rizal Maulana, M.Pd.',
+  muadzin: 'Ust. Fajar Santoso',
+  bilal: 'Ust. Ibrahim Al-Hakim',
 };
 
-export const ANNOUNCEMENTS = [
-  'Kajian rutin malam ini pukul 20.00 WIB bersama Ust. Ahmad Fauzi, Lc. – Kitab Riyadhus Shalihin',
-  'Penerimaan dan penyaluran qurban akan dibuka mulai 1 Dzulhijjah 1448 H.',
-  'Mari bersama memakmurkan masjid.',
+export const BALANCES = [
+  { label: 'Kas Operasional Masjid', amount: 32500000 },
+  { label: 'Kas Ambulance', amount: 18750000 },
+  { label: 'Kas Dana Pembangunan', amount: 275000000 },
+  { label: 'Kas PHBI', detail: 'Peringatan Hari Besar Islam', amount: 27500000 },
 ];
 
-export const QUOTE = {
-  text: 'Sebaik-baik manusia adalah yang paling bermanfaat bagi manusia lain.',
-  source: 'HR. Ahmad',
+export const CARPET_DONATION_TOTAL = 48750000;
+
+export const PROGRAMS = {
+  ambulance: {
+    label: 'Layanan Ambulance Gratis',
+    note: 'RW 14 & RW 15',
+    category: 'Layanan Masjid',
+    title: 'Layanan Ambulance Gratis',
+    description: 'Untuk warga di lingkungan RW 14 dan RW 15.',
+  },
+  wakaf: {
+    label: 'Program Wakaf',
+    category: 'Program Masjid',
+    title: 'Program Wakaf',
+    description: 'Informasi program wakaf tersedia melalui pengurus masjid.',
+    image: { src: 'masjid.webp' },
+  },
+  qurban: {
+    label: 'Program Qurban',
+    category: 'Program Masjid',
+    title: 'Program Qurban',
+    description: 'Informasi pendaftaran qurban tersedia melalui pengurus masjid.',
+  },
+  carpet: {
+    label: 'Program Donasi',
+    note: 'Pengadaan Karpet Tahap Kedua',
+    category: 'Program Donasi Berjalan',
+    title: 'Pengadaan\nKarpet Tahap Kedua',
+    image: { src: 'karpet-masjid.webp' },
+  },
+  donationLabel: 'Total Dana Terkumpul',
+  donationTotal: CARPET_DONATION_TOTAL,
 };
 
-export const QRIS = {
-  nmid: 'ID2026000123456',
-  bank: 'Bank Syariah Indonesia (BSI)',
-  account: '7222 3333 4444',
-  holder: 'a.n. Masjid Al-Falah Bekasi',
+export const GALLERY = {
+  label: 'Galeri Kegiatan',
+  category: 'Dokumentasi Masjid',
+  title: 'Galeri Kegiatan',
+  photos: [],
 };
 
-export const DONATION = {
-  period: 'Periode Oktober 2026',
-  total: 158780000,
-  growth: 12,
-  categories: [
-    { key: 'infaq', label: 'Infaq', amount: 64250000 },
-    { key: 'sedekah', label: 'Sedekah', amount: 32180000 },
-    { key: 'wakaf', label: 'Wakaf', amount: 28500000 },
-    { key: 'zakat', label: 'Zakat', amount: 18750000 },
-  ],
-  others: [
-    { label: 'Operasional', amount: 10100000 },
-    { label: 'Lainnya', amount: 5000000 },
-  ],
+export const SECTION_TITLES = {
+  schedule: 'Jadwal\nKegiatan Rutin',
+  scheduleSubtitle: 'Pengajian / Kajian Mingguan Masjid',
+  friday: 'Jadwal Khatib &\nSholat Jumat',
+  finances: 'Saldo Keuangan',
+  verses: 'Ayat Hari Ini',
 };
 
-export const VERSE = {
-  arab: 'وَمَا تُنفِقُوا مِنْ خَيْرٍ فَإِنَّ اللَّهَ بِهِ عَلِيمٌ',
-  translation: 'Dan apa saja yang kamu infakkan dari kebaikan, maka sesungguhnya Allah mengetahuinya.',
-  ref: 'QS. Al-Baqarah: 273',
-};
-
-export const QURBAN = {
-  badge: 'Menjelang Idul Adha',
-  description: 'Tunaikan qurban, hadirkan kebahagiaan bagi yang membutuhkan.',
-  collected: 10100000,
-  target: 50000000,
-};
-
-export const ARTICLES = [
-  { badge: 'KAJIAN', title: 'Keutamaan Sholat Berjamaah di Masjid', date: '12 Oktober 2026', image: '/articles/artikel.webp' },
-  { badge: 'AKHLAK', title: "Adab Membaca Al-Qur'an", date: '10 Oktober 2026', image: '/articles/artikel.webp' },
-  { badge: 'HIKMAH', title: 'Makna Sabar dalam Kehidupan Sehari-hari', date: '8 Oktober 2026', image: '/articles/artikel.webp' },
-  { badge: 'FIQIH', title: 'Amalan Ringan, Pahala Besar', date: '5 Oktober 2026', image: '/articles/artikel.webp' },
+export const DAILY_VERSES = [
+  {
+    arab: 'وَمَنْ يَتَّقِ اللَّهَ يَجْعَلْ لَهُ مَخْرَجًا',
+    translation: 'Barangsiapa bertakwa kepada Allah niscaya Dia akan membukakan jalan keluar baginya.',
+    ref: 'QS. At-Talaq (65): 2 · Cuplikan',
+    source: 'https://quran.com/id/perceraian/2',
+  },
+  {
+    arab: 'فَإِنَّ مَعَ الْعُسْرِ يُسْرًا',
+    translation: 'Maka sesungguhnya bersama kesulitan ada kemudahan.',
+    ref: 'QS. Asy-Syarh (94): 5',
+    source: 'https://quran.com/id/melapangkan/5',
+  },
+  {
+    arab: 'فَاذْكُرُونِي أَذْكُرْكُمْ وَاشْكُرُوا لِي وَلَا تَكْفُرُونِ',
+    translation: 'Maka ingatlah kepada-Ku, Aku pun akan ingat kepadamu. Bersyukurlah kepada-Ku, dan janganlah kamu ingkar kepada-Ku.',
+    ref: 'QS. Al-Baqarah (2): 152',
+    source: 'https://quran.com/id/sapi-betina/152',
+  },
 ];
 
-export const GALLERY = [
-  { src: '/masjid.webp', caption: 'Sholat Berjamaah', date: '12 Oktober 2026' },
-  { src: '/articles/artikel.webp', caption: 'Kajian Rutin', date: '10 Oktober 2026' },
-  { src: '/masjid.webp', caption: 'Gotong Royong', date: '8 Oktober 2026' },
-  { src: '/articles/artikel.webp', caption: 'Buka Puasa Bersama', date: '5 Oktober 2026' },
-];
+export function dailyVerse(dateKey, overrides, rotation = DAILY_VERSES) {
+  const custom = overrides[dateKey];
+  if ([custom?.arab, custom?.translation, custom?.ref].every((value) => typeof value === 'string' && value.trim())) {
+    return custom;
+  }
+
+  const dayNumber = Math.floor(Date.parse(dateKey) / 86_400_000);
+  const verses = rotation?.length ? rotation : DAILY_VERSES;
+  const index = ((dayNumber % verses.length) + verses.length) % verses.length;
+  return verses[index];
+}

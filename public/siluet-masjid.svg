@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 474 112" fill="#0b5936">
+  <defs>
+    <path id="menara" d="M-6 0v-64h-3v-4h3v-11c0-5 5-8 6-12 1 4 6 7 6 12v11h3v4H6V0ZM-1-90v-6h2v6Z"/>
+    <path id="kubah" d="M-28 0v-23c-8-13 5-24 16-30 7-4 10-8 12-13 2 5 5 9 12 13 11 6 24 17 16 30V0ZM-1-64v-10h2v10Zm7-15a7 7 0 1 1-7-7 6 6 0 0 0 7 7Z"/>
+    <path id="palem" d="M0 0c4-14 5-29 3-43-4-2-11-1-17 4 1-5 6-8 12-8-6-4-13-3-18 0 3-6 12-9 20-4-3-6-8-8-14-8 5-4 15 0 17 7 1-7 6-11 12-11-5 3-8 8-8 12 7-7 15-5 20-1-6-2-12-1-17 3 8-2 15 2 17 7-6-3-13-5-19-2 0 17-1 29-3 44Z"/>
+  </defs>
+  <path d="M0 108c65-7 132-5 193-3 82 3 181-8 281-5v12H0Z"/>
+  <use href="#palem" transform="translate(28 109) scale(.86)"/>
+  <use href="#kubah" transform="translate(72 110) scale(.42)"/>
+  <use href="#menara" transform="translate(106 110) scale(.64)"/>
+  <use href="#kubah" transform="translate(143 110) scale(.63)"/>
+  <use href="#kubah" transform="translate(184 110) scale(.46)"/>
+  <use href="#menara" transform="translate(218 110) scale(1.08)"/>
+  <use href="#kubah" transform="translate(274 110) scale(1.28)"/>
+  <use href="#menara" transform="translate(326 110) scale(1.02)"/>
+  <use href="#kubah" transform="translate(362 110) scale(.65)"/>
+  <use href="#kubah" transform="translate(402 110) scale(.39)"/>
+  <use href="#palem" transform="translate(446 108) scale(.88)"/>
+</svg>
